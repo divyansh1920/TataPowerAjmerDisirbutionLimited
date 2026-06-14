@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPADL — Source Data Sheets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0F4F9;--surf:#E5EBF4;--card:#FFFFFF;--bdr:#C8D3E0;
+  --el:#0F5CBC;--el-dim:rgba(15,92,188,.10);
+  --txt:#1B2B40;--mu:#456785;
+  --fh:'Rajdhani',sans-serif;--fb:'Inter',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--fb);font-size:16px;line-height:1.6;overflow-x:hidden}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:58px;
+  background:rgba(240,244,249,.97);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:space-between;padding:0 40px}
+.nav-logo{font-family:var(--fh);font-size:18px;font-weight:700;color:var(--el);letter-spacing:1px}
+.nav-logo span{color:var(--mu);font-weight:400;font-size:14px;margin-left:8px}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{color:var(--mu);text-decoration:none;font-size:12px;font-weight:500;
+  letter-spacing:.8px;text-transform:uppercase;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--el)}
+
+.eyebrow{font-family:var(--fm);font-size:11px;color:var(--el);letter-spacing:3px;
+  text-transform:uppercase;margin-bottom:10px;opacity:.7}
+.sec-title{font-family:var(--fh);font-size:clamp(26px,3.8vw,42px);font-weight:700;
+  color:var(--txt);line-height:1.15;margin-bottom:14px}
+.sec-desc{font-size:14px;color:var(--mu);max-width:680px;line-height:1.75;margin-bottom:34px}
+
+.drive-section{max-width:1180px;margin:0 auto;padding:120px 40px 76px}
+
+.sheet-block{margin-bottom:50px}
+.sheet-block:last-child{margin-bottom:0}
+.sheet-label{font-family:var(--fh);font-size:17px;font-weight:600;color:var(--txt);margin-bottom:6px}
+.sheet-sub{font-size:12px;color:var(--mu);margin-bottom:14px}
+
+.drive-frame{width:100%;height:600px;border:1px solid var(--bdr);border-radius:12px;
+  overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);background:var(--card)}
+.drive-frame iframe{width:100%;height:100%;border:none;display:block}
+
+footer{background:var(--surf);border-top:1px solid var(--bdr);padding:36px 40px;text-align:center}
+.f-title{font-family:var(--fh);font-size:15px;font-weight:600;color:var(--txt);margin-bottom:6px}
+.f-sub{font-size:12px;color:var(--mu);line-height:1.6}
+
+@media(max-width:900px){.drive-section{padding:100px 20px 56px}}
+@media(max-width:600px){
+  .nav-links{display:none}
+  .drive-frame{height:420px}
+  .sheet-block{margin-bottom:32px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">TPADL <span>· Detection Engine v3.0</span></div>
+  <ul class="nav-links">
+    <li><a href="tpadl_working.html#problem">Problem</a></li>
+    <li><a href="tpadl_working.html#data">Data</a></li>
+    <li><a href="tpadl_working.html#engine">Engine</a></li>
+    <li><a href="tpadl_working.html#results">Results</a></li>
+    <li><a href="tpadl_working.html#financial">Financial</a></li>
+    <li><a href="tpadl_working.html#conclusion">Conclusion</a></li>
+    <li><a href="data.html" class="active">Source Sheets</a></li>
+  </ul>
+</nav>
+
+<div class="drive-section">
+  <div class="eyebrow">10 — Source Data</div>
+  <h2 class="sec-title">Full Working Datasets</h2>
+  <p class="sec-desc">Live embedded view of both source workbooks underlying this analysis — the consumer-level theft detection scoring engine and the financial impact model.</p>
+
+  <div class="sheet-block">
+    <div class="sheet-label">Theft Detection Engine</div>
+    <div class="sheet-sub">111,792-consumer scoring sheet — CPI, LCI, VHS layer scores, final classification</div>
+    <div class="drive-frame">
+      <!-- PASTE THEFT DETECTION SHEET LINK BELOW -->
+      <iframe src="https://docs.google.com/spreadsheets/d/1XfKE8CAL9CVF8rxfAdt_N1fgp8jvXu9o/edit?usp=sharing&ouid=106575157220402998671&rtpof=true&sd=true"></iframe>
+    </div>
+  </div>
+
+  <div class="sheet-block">
+    <div class="sheet-label">Financial Analysis Model</div>
+    <div class="sheet-sub">AT&amp;C reduction scenarios, NPV/IRR, sensitivity tables, investment case</div>
+    <div class="drive-frame">
+      <!-- PASTE FINANCIAL MODEL SHEET LINK BELOW -->
+      <iframe src="https://docs.google.com/spreadsheets/d/1hzkNjHZ5f7fz3hKKG8Zuzdun1eZq2wTS/edit?usp=sharing&ouid=106575157220402998671&rtpof=true&sd=true"></iframe>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="f-title">Predictive Meter Data Analytics for AT&amp;C Loss Identification and Revenue Optimization</div>
+  <div class="f-sub">MBA Capstone Project &nbsp;·&nbsp; Tata Power Ajmer Distribution Limited &nbsp;·&nbsp; 2025</div>
+</footer>
+
+</body>
+</html>
