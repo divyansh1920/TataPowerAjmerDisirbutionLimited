@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPADL — AT&C Loss Detection Engine v3.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#F0F4F9;--surf:#E5EBF4;--card:#FFFFFF;--card2:#EEF2F8;--bdr:#C8D3E0;
+  --el:#0F5CBC;--el-dim:rgba(15,92,188,.10);--or:#D94E18;--gr:#008A60;
+  --re:#C42828;--am:#AC7100;--go:#937000;--txt:#1B2B40;--mu:#456785;--di:#5E7B95;
+  --fh:'Rajdhani',sans-serif;--fb:'Inter',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--fb);font-size:16px;line-height:1.6;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:58px;
+  background:rgba(240,244,249,.97);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:space-between;padding:0 40px}
+.nav-logo{font-family:var(--fh);font-size:18px;font-weight:700;color:var(--el);letter-spacing:1px}
+.nav-logo span{color:var(--mu);font-weight:400;font-size:14px;margin-left:8px}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{color:var(--mu);text-decoration:none;font-size:12px;font-weight:500;
+  letter-spacing:.8px;text-transform:uppercase;transition:color .2s}
+.nav-links a:hover{color:var(--el)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:80px 40px 60px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(15,92,188,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(15,92,188,.06) 1px,transparent 1px);
+  background-size:44px 44px;pointer-events:none}
+.hero::after{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 55% at 50% 50%,rgba(15,92,188,.08) 0%,transparent 70%);
+  pointer-events:none}
+.h-eyebrow{font-family:var(--fm);font-size:11px;color:var(--el);letter-spacing:3.5px;
+  text-transform:uppercase;margin-bottom:28px;position:relative;z-index:1;opacity:.75}
+.h-meter-wrap{position:relative;z-index:1;margin-bottom:8px}
+.h-meter-label{font-family:var(--fm);font-size:11px;color:var(--mu);letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:6px}
+.h-meter{font-family:var(--fm);font-size:clamp(60px,9vw,118px);font-weight:600;
+  color:var(--el);letter-spacing:-2px;line-height:1;
+  text-shadow:0 2px 12px rgba(15,92,188,.18)}
+.h-meter-sub{font-size:16px;color:var(--mu);margin-top:10px}
+.h-title{font-family:var(--fh);font-size:clamp(22px,3.2vw,40px);font-weight:600;
+  color:var(--txt);max-width:680px;line-height:1.2;margin:30px auto 14px;
+  position:relative;z-index:1}
+.h-subtitle{font-size:14px;color:var(--mu);max-width:520px;margin:0 auto 48px;
+  position:relative;z-index:1;line-height:1.6}
+.h-stats{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;position:relative;z-index:1}
+.h-stat{background:var(--card);border:1px solid var(--bdr);border-radius:10px;
+  padding:15px 22px;min-width:138px;box-shadow:0 2px 8px rgba(15,92,188,.07)}
+.h-stat-v{font-family:var(--fm);font-size:22px;font-weight:600;display:block;line-height:1}
+.h-stat-v.re{color:var(--re)}.h-stat-v.go{color:var(--go)}.h-stat-v.el{color:var(--el)}.h-stat-v.gr{color:var(--gr)}
+.h-stat-l{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;display:block}
+
+/* SECTION BASE */
+section{padding:76px 40px;max-width:1180px;margin:0 auto}
+.surf-section{max-width:100%;background:var(--surf);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr)}
+.surf-section>.inner{max-width:1180px;margin:0 auto;padding:76px 40px}
+.eyebrow{font-family:var(--fm);font-size:11px;color:var(--el);letter-spacing:3px;
+  text-transform:uppercase;margin-bottom:10px;opacity:.7}
+.sec-title{font-family:var(--fh);font-size:clamp(26px,3.8vw,42px);font-weight:700;
+  color:var(--txt);line-height:1.15;margin-bottom:14px}
+.sec-desc{font-size:14px;color:var(--mu);max-width:620px;line-height:1.75;margin-bottom:44px}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:26px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.card-title{font-family:var(--fh);font-size:18px;font-weight:600;color:var(--txt);margin-bottom:8px}
+.card-body{font-size:13px;color:var(--mu);line-height:1.65}
+
+/* GRIDS */
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+
+/* PROBLEM */
+.prob-grid{display:grid;grid-template-columns:1fr 360px;gap:48px;align-items:start}
+.prob-text p{font-size:14px;color:var(--mu);line-height:1.78;margin-bottom:18px}
+.prob-text strong{color:var(--txt)}
+.prob-stats{display:flex;flex-direction:column;gap:14px}
+.pstat{background:var(--card);border:1px solid var(--bdr);border-radius:10px;
+  padding:18px 22px;border-left:3px solid var(--el);box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.pstat.danger{border-left-color:var(--re)}
+.pstat.warn{border-left-color:var(--am)}
+.pstat.ok{border-left-color:var(--gr)}
+.pstat-v{font-family:var(--fm);font-size:26px;font-weight:600;color:var(--el)}
+.pstat.danger .pstat-v{color:var(--re)}.pstat.warn .pstat-v{color:var(--am)}.pstat.ok .pstat-v{color:var(--gr)}
+.pstat-l{font-size:11px;color:var(--mu);margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+.pstat-d{font-size:12px;color:var(--di);margin-top:5px;line-height:1.45}
+
+/* PIPELINE */
+.pipeline{display:flex;align-items:center;gap:0;margin:36px 0;overflow-x:auto;padding-bottom:8px}
+.p-node{background:var(--card);border:1px solid var(--bdr);border-radius:10px;
+  padding:18px 20px;text-align:center;flex-shrink:0;min-width:148px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.p-node.hl{border-color:var(--el);background:var(--el-dim)}
+.p-node.ex{border-color:var(--bdr);opacity:.6}
+.p-v{font-family:var(--fm);font-size:20px;font-weight:600;color:var(--el);display:block}
+.p-v.dim{color:var(--di)}
+.p-l{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+.p-arr{color:var(--el);font-size:18px;padding:0 10px;flex-shrink:0;opacity:.4}
+
+/* RATE CATEGORY BARS */
+.rc-row{display:flex;align-items:center;gap:12px;margin-bottom:9px}
+.rc-lbl{font-family:var(--fm);font-size:11px;color:var(--el);width:95px;flex-shrink:0}
+.rc-bg{flex:1;background:var(--bdr);height:9px;border-radius:5px;overflow:hidden}
+.rc-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--el),rgba(15,92,188,.5))}
+.rc-n{font-family:var(--fm);font-size:11px;color:var(--mu);width:56px;text-align:right;flex-shrink:0}
+
+/* DETECTION ENGINE */
+.engine-stack{display:flex;flex-direction:column;gap:4px;margin:36px 0}
+.layer{border:1px solid var(--bdr);border-radius:12px;padding:26px 30px;position:relative;background:var(--card)}
+.layer.cpi{border-left:4px solid var(--el);background:rgba(15,92,188,.03)}
+.layer.lci{border-left:4px solid var(--or);background:rgba(217,78,24,.03)}
+.layer.vhs{border-left:4px solid var(--am);background:rgba(172,113,0,.03)}
+.l-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.l-name{font-family:var(--fh);font-size:21px;font-weight:700;color:var(--txt)}
+.l-wt{font-family:var(--fm);font-size:26px;font-weight:600;color:var(--el)}
+.layer.lci .l-wt{color:var(--or)}.layer.vhs .l-wt{color:var(--am)}
+.l-desc{font-size:13px;color:var(--mu);margin-bottom:14px}
+.l-vars{display:flex;gap:8px;flex-wrap:wrap}
+.v-chip{background:var(--card2);border:1px solid var(--bdr);border-radius:6px;
+  padding:5px 12px;font-family:var(--fm);font-size:11px;color:var(--txt);
+  display:flex;align-items:center;gap:5px}
+.v-chip em{color:var(--mu);font-style:normal;font-size:10px}
+
+.formula-box{background:var(--card);border:1px solid rgba(15,92,188,.35);border-radius:10px;
+  padding:18px 26px;margin:20px 0;font-family:var(--fm);font-size:14px;color:var(--el);
+  text-align:center;box-shadow:0 0 20px rgba(15,92,188,.07);line-height:1.6}
+.formula-box .fl{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;display:block}
+
+/* OVERRIDE */
+.ov-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:28px}
+.ov-card{background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.ov-card.o1{border-top:3px solid var(--am)}.ov-card.o2{border-top:3px solid var(--re)}.ov-card.o3{border-top:3px solid var(--or)}
+.ov-id{font-family:var(--fm);font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.ov-rule{font-family:var(--fm);font-size:11px;color:var(--el);background:rgba(15,92,188,.07);
+  padding:7px 10px;border-radius:5px;margin-bottom:10px;line-height:1.55}
+.ov-cnt{font-family:var(--fm);font-size:22px;font-weight:600;color:var(--txt)}
+.ov-cnt .fired{color:var(--re)}.ov-cnt .zero{color:var(--di)}
+
+/* VAR TABLE */
+.vtbl{width:100%;border-collapse:collapse;margin-top:22px}
+.vtbl th{text-align:left;padding:10px 14px;font-family:var(--fh);font-size:11px;
+  text-transform:uppercase;letter-spacing:1px;color:var(--mu);border-bottom:1px solid var(--bdr)}
+.vtbl td{padding:12px 14px;border-bottom:1px solid rgba(200,210,224,.7);
+  font-size:13px;color:var(--txt);vertical-align:top}
+.vtbl tr:hover td{background:rgba(15,92,188,.04)}
+.v-code{font-family:var(--fm);font-size:13px;font-weight:600;color:var(--el)}
+.v-wt{font-family:var(--fm);font-size:13px;color:var(--or);font-weight:600}
+.new-b{display:inline-block;background:rgba(0,138,96,.12);border:1px solid var(--gr);
+  color:var(--gr);font-size:9px;padding:1px 7px;border-radius:4px;font-family:var(--fm);
+  text-transform:uppercase;letter-spacing:.5px;margin-left:5px;vertical-align:middle}
+.v-d{color:var(--mu);font-size:12px;line-height:1.5}
+
+/* RESULTS KPI */
+.r-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:44px}
+.kpi{background:var(--card);border:1px solid var(--bdr);border-radius:12px;
+  padding:22px 18px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.kpi.high{border-top:3px solid var(--re)}.kpi.med{border-top:3px solid var(--am)}
+.kpi.low{border-top:3px solid var(--gr)}.kpi.ex{border-top:3px solid var(--di)}
+.kpi-v{font-family:var(--fm);font-size:28px;font-weight:600;display:block;line-height:1}
+.kpi.high .kpi-v{color:var(--re)}.kpi.med .kpi-v{color:var(--am)}
+.kpi.low .kpi-v{color:var(--gr)}.kpi.ex .kpi-v{color:var(--di)}
+.kpi-l{font-family:var(--fh);font-size:16px;font-weight:600;color:var(--txt);margin-top:7px;display:block}
+.kpi-p{font-family:var(--fm);font-size:12px;color:var(--mu);margin-top:3px}
+
+/* CHARTS */
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:28px}
+.chart-card{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:26px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.chart-title{font-family:var(--fh);font-size:17px;font-weight:600;color:var(--txt);margin-bottom:18px}
+
+.info-box{background:rgba(15,92,188,.05);border:1px solid rgba(15,92,188,.25);
+  border-radius:10px;padding:18px 22px;margin-top:20px}
+.info-box p{font-size:13px;color:var(--txt);line-height:1.6}
+.info-box strong{color:var(--el);font-family:var(--fm)}
+
+/* FINANCIAL */
+.fin-det{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:44px}
+.fin-m{background:var(--card);border:1px solid var(--bdr);border-radius:12px;
+  padding:22px;border-left:3px solid var(--go);box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.fin-v{font-family:var(--fm);font-size:26px;font-weight:600;color:var(--go);display:block}
+.fin-l{font-size:12px;color:var(--mu);margin-top:5px;display:block;line-height:1.4}
+.fin-s{font-size:11px;color:var(--di);margin-top:4px}
+
+/* SCENARIO TABLE */
+.stbl{width:100%;border-collapse:collapse;margin:22px 0}
+.stbl th{text-align:center;padding:11px 14px;font-family:var(--fh);font-size:12px;
+  text-transform:uppercase;letter-spacing:.5px;color:var(--mu);border-bottom:1px solid var(--bdr)}
+.stbl th:first-child{text-align:left}
+.stbl td{text-align:center;padding:13px 14px;font-family:var(--fm);font-size:13px;
+  color:var(--txt);border-bottom:1px solid rgba(200,210,224,.6)}
+.stbl td:first-child{text-align:left;font-family:var(--fh);font-size:15px;font-weight:600;color:var(--txt)}
+.stbl tr.base td{background:rgba(15,92,188,.05)}
+.stbl tr.base td:first-child{color:var(--el)}
+.s-badge{display:inline-block;background:var(--el-dim);color:var(--el);font-size:9px;
+  padding:1px 7px;border-radius:3px;font-family:var(--fm);margin-left:5px;vertical-align:middle}
+
+/* INVEST */
+.inv-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:28px 0}
+.inv-m{background:var(--card);border:1px solid var(--bdr);border-radius:12px;
+  padding:18px;text-align:center;border-top:3px solid var(--go);box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.inv-v{font-family:var(--fm);font-size:24px;font-weight:600;color:var(--go);display:block}
+.inv-l{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;
+  margin-top:5px;display:block}
+
+/* VHS TABLE */
+.vhs-tbl{width:100%;border-collapse:collapse;margin-top:22px}
+.vhs-tbl th{text-align:center;padding:10px 18px;font-family:var(--fh);font-size:12px;
+  text-transform:uppercase;letter-spacing:1px;color:var(--mu);border-bottom:1px solid var(--bdr)}
+.vhs-tbl td{text-align:center;padding:12px 18px;font-family:var(--fm);font-size:14px;
+  border-bottom:1px solid rgba(200,210,224,.5)}
+.v0{color:var(--di)}.v40{color:var(--am)}.v65{color:var(--or)}.v82{color:#E64A19}.v100{color:var(--re)}
+
+/* SENSITIVITY */
+.sens-wrap{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:28px}
+.s-tbl{width:100%;border-collapse:collapse}
+.s-tbl th{text-align:center;padding:9px 12px;font-family:var(--fh);font-size:11px;
+  text-transform:uppercase;color:var(--mu);border-bottom:1px solid var(--bdr)}
+.s-tbl th:first-child{text-align:left}
+.s-tbl td{text-align:center;padding:9px 12px;font-family:var(--fm);font-size:12px;
+  color:var(--txt);border-bottom:1px solid rgba(200,210,224,.5)}
+.s-tbl td:first-child{text-align:left;color:var(--el)}
+.s-tbl tr.sr td{background:rgba(15,92,188,.05)}
+
+/* CONTRIBUTIONS */
+.contrib-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:44px}
+.contrib{background:var(--card);border:1px solid var(--bdr);border-radius:12px;
+  padding:26px;border-top:3px solid var(--el);box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.c-num{font-family:var(--fm);font-size:10px;color:var(--el);letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:10px;opacity:.7}
+.c-title{font-family:var(--fh);font-size:17px;font-weight:600;color:var(--txt);
+  margin-bottom:10px;line-height:1.3}
+.c-body{font-size:12px;color:var(--mu);line-height:1.65}
+
+/* SCOPE */
+.scope-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:28px}
+.scope-item{background:var(--card);border:1px solid var(--bdr);border-radius:10px;
+  padding:18px;display:flex;gap:14px;align-items:flex-start;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.s-ico{font-size:20px;flex-shrink:0;width:32px;text-align:center}
+.s-title{font-family:var(--fh);font-size:15px;font-weight:600;color:var(--txt);margin-bottom:4px}
+.s-body{font-size:12px;color:var(--mu);line-height:1.55}
+
+/* FOOTER */
+footer{background:var(--surf);border-top:1px solid var(--bdr);padding:36px 40px;text-align:center}
+.f-title{font-family:var(--fh);font-size:15px;font-weight:600;color:var(--txt);margin-bottom:6px}
+.f-sub{font-size:12px;color:var(--mu);line-height:1.6}
+.f-tags{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.f-tag{background:var(--card);border:1px solid var(--bdr);border-radius:20px;
+  padding:3px 12px;font-family:var(--fm);font-size:10px;color:var(--mu)}
+
+/* INSIGHT BOX */
+.insight{background:rgba(15,92,188,.05);border-left:3px solid var(--el);border-radius:0 6px 6px 0;
+  padding:9px 14px;margin-bottom:16px;font-size:12px;color:var(--mu);line-height:1.6}
+.insight strong{color:var(--el);font-family:var(--fm)}
+
+/* HEATMAP */
+.heatmap-wrap{overflow-x:auto;margin-top:4px}
+.hm-tbl{border-collapse:collapse;width:100%;min-width:520px}
+.hm-tbl th{padding:9px 12px;font-family:var(--fm);font-size:11px;color:var(--mu);
+  text-align:center;border-bottom:1px solid var(--bdr);white-space:nowrap}
+.hm-tbl th:first-child{text-align:left}
+.hm-tbl td{padding:9px 10px;text-align:center;font-family:var(--fm);font-size:12px;
+  font-weight:600;border:1px solid rgba(200,210,224,.35);
+  transition:transform .12s,box-shadow .12s;cursor:default}
+.hm-tbl td:not(:first-child):hover{transform:scale(1.08);box-shadow:0 2px 8px rgba(0,0,0,.15);position:relative;z-index:2}
+.hm-tbl td.hm-lbl{text-align:left;font-family:var(--fm);font-size:11px;
+  background:var(--surf)!important;color:var(--el);border:none;
+  border-bottom:1px solid rgba(200,210,224,.4);padding-right:14px;white-space:nowrap}
+.hm-base-row td.hm-lbl{color:var(--re)!important}
+
+/* DRIVE EMBED */
+.drive-section{max-width:1180px;margin:0 auto;padding:76px 40px}
+.drive-frame{width:100%;height:600px;border:1px solid var(--bdr);border-radius:12px;
+  overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.drive-placeholder{background:var(--card);border:2px dashed var(--bdr);border-radius:12px;
+  padding:60px 40px;text-align:center;color:var(--mu);font-size:14px;line-height:1.8}
+.drive-placeholder code{background:var(--surf);border:1px solid var(--bdr);border-radius:4px;
+  padding:2px 8px;font-family:var(--fm);font-size:12px;color:var(--el)}
+
+@media(max-width:900px){
+  .g3,.g4,.r-kpi,.fin-det,.inv-row,.contrib-grid,.ov-grid{grid-template-columns:1fr 1fr}
+  .charts-row,.sens-wrap,.scope-grid,.prob-grid{grid-template-columns:1fr}
+  nav{padding:0 20px}.nav-links{gap:14px}
+  section,.surf-section>.inner{padding:56px 20px}
+}
+@media(max-width:600px){
+  .g3,.g4,.r-kpi,.fin-det,.inv-row,.contrib-grid,.ov-grid{grid-template-columns:1fr}
+  .nav-links{display:none}.h-stats{flex-direction:column;align-items:center}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">TPADL <span>· Detection Engine v3.0</span></div>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#data">Data</a></li>
+    <li><a href="#engine">Engine</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#financial">Financial</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="h-eyebrow">Tata Power Ajmer Distribution Limited &nbsp;·&nbsp; Rajasthan, India &nbsp;·&nbsp; 2025</div>
+  <div class="h-meter-wrap">
+    <div class="h-meter-label">consumers scored</div>
+    <div class="h-meter" id="meter">0</div>
+    <div class="h-meter-sub">across three weighted detection layers</div>
+  </div>
+  <h1 class="h-title">Predictive Meter Data Analytics for AT&amp;C Loss Identification and Revenue Optimization</h1>
+  <p class="h-subtitle">TPADL Theft Detection Engine v3.0 &mdash; Rule-based, interpretable, audit-ready</p>
+  <div class="h-stats">
+    <div class="h-stat"><span class="h-stat-v re">49,981</span><span class="h-stat-l">HIGH risk consumers</span></div>
+    <div class="h-stat"><span class="h-stat-v go">₹6.99 Cr</span><span class="h-stat-l">Base annual saving</span></div>
+    <div class="h-stat"><span class="h-stat-v el">2.91×</span><span class="h-stat-l">Benefit-cost ratio</span></div>
+    <div class="h-stat"><span class="h-stat-v gr">+32.6%</span><span class="h-stat-l">TPADL EBITDA impact</span></div>
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<div class="surf-section" id="problem">
+<div class="inner">
+  <div class="eyebrow">01 — Problem Statement</div>
+  <h2 class="sec-title">India's AT&amp;C Loss Crisis and the TPADL Context</h2>
+  <div class="prob-grid">
+    <div class="prob-text">
+      <p>Aggregate Technical and Commercial (AT&amp;C) losses represent the gap between energy a utility purchases and revenue it actually collects. India's national AT&amp;C figure was <strong>22.32% in FY 2020-21</strong>, appeared to decline to <strong>15.41% by FY 2022-23</strong>, but reversed — the Power Finance Corporation's report for 2023-24 recorded a climb back to <strong>16.12%</strong>. Accumulated sector losses stood at nearly <strong>₹6,479 billion</strong> as of March 2023, an 11% increase year-over-year.</p>
+      <p>Commercial losses — the harder kind — are substantially driven by electricity theft. India loses an estimated <strong>$17 billion annually</strong> to non-technical losses (NTL), accounting for 30-40% of total generation. The global IEA average for comparable utility-level losses sits at around 7%. India is not a marginal outlier.</p>
+      <p>Traditional detection depends on reactive, field-based approaches: physical inspections triggered by complaints or random audits. There is no systematic mechanism to rank the full consumer base by theft probability. False-positive rates from complaint-driven inspections are high. The approach is expensive per confirmed case, and the fraction of actual theft caught is low. TPADL's estimated AT&amp;C stands at approximately <strong>18%</strong> — 3 percentage points above the RDSS national target of 15%.</p>
+      <p>The rationale of this study is to design a <strong>multi-layer, rule-based predictive detection framework</strong> that uses 12 months of smart meter data and MDI readings to identify consumers with high theft probability and generate a prioritized inspection list — entirely interpretable, field-auditable, and deployable without data science infrastructure.</p>
+    </div>
+    <div class="prob-stats">
+      <div class="pstat danger">
+        <div class="pstat-v">$17 Bn</div>
+        <div class="pstat-l">India electricity theft annual cost</div>
+        <div class="pstat-d">30–40% of generation unaccounted; Kawoosa et al. (2023)</div>
+      </div>
+      <div class="pstat warn">
+        <div class="pstat-v">16.12%</div>
+        <div class="pstat-l">National AT&amp;C loss FY 2023-24</div>
+        <div class="pstat-d">Reversed from 15.41% in FY 2022-23; PFC Report 2024</div>
+      </div>
+      <div class="pstat ok">
+        <div class="pstat-v">12–15%</div>
+        <div class="pstat-l">RDSS national target</div>
+        <div class="pstat-d">Revamped Distribution Sector Scheme benchmark for grants</div>
+      </div>
+      <div class="pstat">
+        <div class="pstat-v">18%</div>
+        <div class="pstat-l">TPADL estimated AT&amp;C baseline</div>
+        <div class="pstat-d">3pp above RDSS target; this project targets the gap</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- DATA & PREPROCESSING -->
+<section id="data">
+  <div class="eyebrow">02 — Dataset &amp; Preprocessing</div>
+  <h2 class="sec-title">From 164,076 Records to a Clean Scoring Pool</h2>
+  <p class="sec-desc">12 months of monthly consumption (kWh) and MDI data, one record per consumer. Three rules run before any variable is computed.</p>
+
+  <div class="pipeline">
+    <div class="p-node"><span class="p-v">164,076</span><div class="p-l">Raw consumer base</div></div>
+    <div class="p-arr">→</div>
+    <div class="p-node"><span class="p-v">P1</span><div class="p-l">Null ≤10 kWh months</div></div>
+    <div class="p-arr">→</div>
+    <div class="p-node"><span class="p-v">P2</span><div class="p-l">Require ≥6 valid months</div></div>
+    <div class="p-arr">→</div>
+    <div class="p-node hl"><span class="p-v">111,792</span><div class="p-l">Scored pool (68.1%)</div></div>
+    <div class="p-arr" style="color:var(--di)">+</div>
+    <div class="p-node ex"><span class="p-v dim">52,284</span><div class="p-l">Excluded watchlist (31.9%)</div></div>
+  </div>
+
+  <div class="g3" style="margin-bottom:44px">
+    <div class="card">
+      <div class="card-title" style="color:var(--el);font-family:var(--fm)">P1 — Noise Exclusion</div>
+      <div class="card-body">Monthly readings at or below <strong style="color:var(--txt)">10 kWh</strong> are set to NULL. These reflect meter transmission failures, partial disconnections, or data entry placeholders — not real consumption. Treating them as zero would distort trend slopes and inflate volatility scores.</div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--or);font-family:var(--fm)">P2 — Minimum Valid Months</div>
+      <div class="card-body">A consumer must have at least <strong style="color:var(--txt)">6 valid months</strong> after P1 to enter the scoring pool. Below that, statistical calculations become unreliable. Excluded consumers route to an Insufficient Data watchlist and re-enter automatically as data accumulates.</div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--am);font-family:var(--fm)">P3 — Coverage Ratio</div>
+      <div class="card-body">Computed for every consumer who passes P2:<br><br><span style="font-family:var(--fm);color:var(--el);font-size:13px">Coverage_Ratio = Valid_Month_Count / 12</span><br><br>Feeds directly into the Zero Coverage Suspicion Score (ZCSS) in Layer 2.</div>
+    </div>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:14px">Scored pool by rate category</div>
+  <div style="background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:26px;max-width:700px;box-shadow:0 1px 4px rgba(0,0,0,.05)">
+    <div class="rc-row"><div class="rc-lbl">DS-LT1</div><div class="rc-bg"><div class="rc-fill" style="width:84.95%"></div></div><div class="rc-n">84.95% &nbsp;94,970</div></div>
+    <div class="rc-row"><div class="rc-lbl">NDS-LT2</div><div class="rc-bg"><div class="rc-fill" style="width:13.04%;background:linear-gradient(90deg,var(--or),rgba(217,78,24,.5))"></div></div><div class="rc-n">13.04% &nbsp;14,574</div></div>
+    <div class="rc-row"><div class="rc-lbl">SP-LT5</div><div class="rc-bg"><div class="rc-fill" style="width:1.2%;background:linear-gradient(90deg,var(--am),rgba(172,113,0,.5))"></div></div><div class="rc-n">1.20% &nbsp;1,339</div></div>
+    <div class="rc-row"><div class="rc-lbl">PSL-LT3</div><div class="rc-bg"><div class="rc-fill" style="width:0.36%;background:linear-gradient(90deg,var(--gr),rgba(0,138,96,.5))"></div></div><div class="rc-n">0.36% &nbsp;399</div></div>
+    <div class="rc-row"><div class="rc-lbl">AG-MS-LT4</div><div class="rc-bg"><div class="rc-fill" style="width:0.33%;background:linear-gradient(90deg,var(--gr),rgba(0,138,96,.5))"></div></div><div class="rc-n">0.33% &nbsp;372</div></div>
+    <div class="rc-row"><div class="rc-lbl">Others</div><div class="rc-bg"><div class="rc-fill" style="width:0.12%;background:var(--di)"></div></div><div class="rc-n">0.12% &nbsp;138</div></div>
+  </div>
+</section>
+
+<!-- DETECTION ENGINE -->
+<div class="surf-section" id="engine">
+<div class="inner">
+  <div class="eyebrow">03 — Detection Architecture</div>
+  <h2 class="sec-title">Three-Layer Scoring Framework</h2>
+  <p class="sec-desc">Every consumer receives a Final Score from 0–100 by combining three weighted detection layers. All weights, thresholds, and formulas are explicitly documented and field-auditable.</p>
+
+  <div class="engine-stack">
+    <div class="layer cpi">
+      <div class="l-hdr">
+        <div>
+          <div class="l-name">Layer 1 &mdash; Consumption Pattern Index (CPI)</div>
+          <div class="l-desc">Consumption behaviour, seasonal patterns, volatility, peer comparison — 12 data points per consumer.</div>
+        </div>
+        <div class="l-wt">40%</div>
+      </div>
+      <div class="l-vars">
+        <div class="v-chip">CTS <em>20%</em></div>
+        <div class="v-chip">CVI <em>20%</em></div>
+        <div class="v-chip">DSR <em>15%</em></div>
+        <div class="v-chip">ZSB <em>10%</em></div>
+        <div class="v-chip">SCAS <em>15%</em></div>
+        <div class="v-chip">FCS <em>10%</em></div>
+        <div class="v-chip">PDS <em>10%</em></div>
+      </div>
+    </div>
+    <div class="layer lci">
+      <div class="l-hdr">
+        <div>
+          <div class="l-name">Layer 2 &mdash; Load Compliance Index (LCI)</div>
+          <div class="l-desc">Consistency between recorded consumption, sanctioned load, and Maximum Demand Indicator readings.</div>
+        </div>
+        <div class="l-wt">35%</div>
+      </div>
+      <div class="l-vars">
+        <div class="v-chip">LFR <em>30%</em></div>
+        <div class="v-chip">MOI <em>25%</em></div>
+        <div class="v-chip">MCGI <em>30%</em></div>
+        <div class="v-chip">ZCSS <em>15%</em></div>
+      </div>
+    </div>
+    <div class="layer vhs">
+      <div class="l-hdr">
+        <div>
+          <div class="l-name">Layer 3 &mdash; Violation &amp; History Score (VHS)</div>
+          <div class="l-desc">Prior enforcement history — most direct signal in the dataset. Step function, not linear.</div>
+        </div>
+        <div class="l-wt">25%</div>
+      </div>
+      <div class="l-vars">
+        <div class="v-chip">Violation Count <em>step fn</em></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="formula-box">
+    <span class="fl">Final Risk Score</span>
+    Final_Score &nbsp;=&nbsp; (0.40 × CPI) &nbsp;+&nbsp; (0.35 × LCI) &nbsp;+&nbsp; (0.25 × VHS)
+    <div style="font-size:11px;color:var(--mu);margin-top:6px">All layer scores normalised 0–100 · Final_Score range: 0 to 100</div>
+  </div>
+
+  <div style="margin-top:36px">
+    <div class="eyebrow" style="margin-bottom:10px">Classification thresholds</div>
+    <div class="g4">
+      <div class="card" style="border-top:3px solid var(--re)"><div class="card-title" style="color:var(--re)">HIGH</div><div style="font-family:var(--fm);font-size:22px;color:var(--re)">Score ≥ 65</div><div class="card-body" style="margin-top:6px">7-day field inspection SLA. Financial leakage estimate generated.</div></div>
+      <div class="card" style="border-top:3px solid var(--am)"><div class="card-title" style="color:var(--am)">MEDIUM</div><div style="font-family:var(--fm);font-size:22px;color:var(--am)">35 – 64</div><div class="card-body" style="margin-top:6px">30–45 day scheduled inspection. Cross-check MDI vs load.</div></div>
+      <div class="card" style="border-top:3px solid var(--gr)"><div class="card-title" style="color:var(--gr)">LOW</div><div style="font-family:var(--fm);font-size:22px;color:var(--gr)">Score &lt; 35</div><div class="card-body" style="margin-top:6px">Quarterly watchlist. No immediate field action.</div></div>
+      <div class="card" style="border-top:3px solid var(--di)"><div class="card-title" style="color:var(--di)">EXCLUDED</div><div style="font-family:var(--fm);font-size:22px;color:var(--di)">≤ 5 months</div><div class="card-body" style="margin-top:6px">Insufficient data. Routed to meter read resolution team.</div></div>
+    </div>
+  </div>
+
+  <div style="margin-top:44px">
+    <div class="eyebrow" style="margin-bottom:10px">Override rules — escalate to HIGH regardless of score</div>
+    <div class="ov-grid">
+      <div class="ov-card o1">
+        <div class="ov-id">Override O1 — Triggered: <span class="zero">0 consumers</span></div>
+        <div class="ov-rule">Violation_Count ≥ 2<br>AND CPI ≥ 55</div>
+        <div style="font-size:12px;color:var(--mu);line-height:1.5">Zero fires because 99.5% of consumers carry no prior violations. Validates the case for behavioral detection over history-dependent rules.</div>
+      </div>
+      <div class="ov-card o2">
+        <div class="ov-id">Override O2 — Triggered: <span class="fired">49,859 consumers</span></div>
+        <div class="ov-rule">MDI_Ratio ≥ 2.0<br>(peak demand ≥ 2× sanctioned load)</div>
+        <div style="font-size:12px;color:var(--mu);line-height:1.5">Drawing double contracted load is a hard compliance breach. Accounts for 99.8% of all HIGH classifications.</div>
+      </div>
+      <div class="ov-card o3">
+        <div class="ov-id">Override O3 — Triggered: <span class="fired">122 consumers</span></div>
+        <div class="ov-rule">Sanctioned_Load ≥ 25 kW<br>AND Annual_LFR &lt; 0.03</div>
+        <div style="font-size:12px;color:var(--mu);line-height:1.5">Large connection drawing near-zero load: either dormant (remove it) or bypassed (inspect it). Either outcome requires a visit.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- LAYER 1 VARIABLES -->
+<section>
+  <div class="eyebrow">04 — Layer 1 Variables</div>
+  <h2 class="sec-title">CPI — Seven Detection Variables</h2>
+  <p class="sec-desc">Version 3.0 expanded from four to seven variables. Three new signals fill gaps the original CPI could not catch.</p>
+  <table class="vtbl">
+    <thead>
+      <tr><th>Code</th><th>Weight</th><th>Variable</th><th>What it Catches</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="v-code">CTS</td><td class="v-wt">20%</td><td>Consumption Trend Slope</td><td class="v-d">OLS slope on (month, kWh) pairs. A sustained negative slope across 8–12 months suggests a bypass was installed and the meter has been recording less ever since. Category thresholds: Residential 20 | Commercial 80 | Industrial 250 kWh/month.</td></tr>
+      <tr><td class="v-code">CVI</td><td class="v-wt">20%</td><td>Consumption Volatility Index</td><td class="v-d">Coefficient of Variation. Erratically jumping profiles — artificial spikes followed by near-zero months — are the fingerprint of partial bypass or on/off tampering. Score fires when CV ≥ 0.30.</td></tr>
+      <tr><td class="v-code">DSR</td><td class="v-wt">15%</td><td>Drop Severity Ratio</td><td class="v-d">Gap between peak and trough valid months as % of peak. Catches cases CTS misses: V-shaped recoveries and non-linear declines. Fires when (Max – Min)/Max ≥ 40%.</td></tr>
+      <tr><td class="v-code">ZSB</td><td class="v-wt">10%</td><td>Z-Score Statistical Break</td><td class="v-d">Single-month consumption cliff. Fires when minimum-Z month &lt; –2.0 AND prior month was near-normal (Z ≥ –1.0). Targets the abrupt drop when a bypass is installed mid-year.</td></tr>
+      <tr><td class="v-code">SCAS<span class="new-b">new</span></td><td class="v-wt">15%</td><td>Summer Consumption Anomaly Score</td><td class="v-d">Apr–Jul is Rajasthan's peak demand season (AC, coolers, refrigeration). A consumer whose summer mean is materially below their off-season mean is showing the exact pattern field teams associate with summer bypass. Threshold: &lt;0.50 ratio for Residential/Commercial; &lt;0.60 for Industrial.</td></tr>
+      <tr><td class="v-code">FCS<span class="new-b">new</span></td><td class="v-wt">10%</td><td>Flat Consumption Score</td><td class="v-d">Corrects a blind spot: near-zero CoV was being treated as safe. A perfectly flat meter reporting identical readings every month on a large connection is one of the clearest signs of a fixed bypass or tampered register. Fires only when Mean &gt; 50 kWh.</td></tr>
+      <tr><td class="v-code">PDS<span class="new-b">new</span></td><td class="v-wt">10%</td><td>Peer Deviation Score</td><td class="v-d">Groups consumers by Rate Category + sanctioned load bracket (nearest 5 kW). Uses LOW-risk consumer median as the clean baseline. Scores consumers &gt;20% below peer median. The only variable with an external reference point — catches cases where all individual signals look moderate but absolute consumption is anomalous.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- LAYER 2 VARIABLES -->
+<div class="surf-section">
+<div class="inner">
+  <div class="eyebrow">05 — Layer 2 Variables</div>
+  <h2 class="sec-title">LCI — Load Compliance Index</h2>
+  <p class="sec-desc">Four variables compare recorded consumption against what the connection's physical parameters imply. MDI (Maximum Demand Indicator) is the primary physical proxy.</p>
+  <table class="vtbl">
+    <thead>
+      <tr><th>Code</th><th>Weight</th><th>Variable</th><th>Formula &amp; Signal</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="v-code">LFR</td><td class="v-wt">30%</td><td>Load Factor Ratio</td><td class="v-d">Annual_LFR = MEAN(kWh_m / (Sanctioned_kW × Hours_m)). Flags consumers systematically below category floor: Residential 6% | Commercial 8% | Industrial 10%. A 50 kW connection at 1% LFR is either dormant or bypassed.</td></tr>
+      <tr><td class="v-code">MOI</td><td class="v-wt">25%</td><td>MDI Overdrawal Index</td><td class="v-d">MDI_Ratio = Highest_MDI_kW / Sanctioned_Load_kW. Score fires above 1.05 (5% tolerance). Score=100 when MDI ≥ 2× sanctioned. A consumer whose consumption falls but MDI remains high is running load the meter is not recording.</td></tr>
+      <tr><td class="v-code">MCGI</td><td class="v-wt">30%</td><td>MDI-Consumption Gap Index</td><td class="v-d">Most innovative variable. Expected_kWh = MDI_m × Hours_m × LF_typical (0.20 Res / 0.35 Com / 0.50 Ind). MCGI = mean gap between expected and actual kWh. Score fires above 20% gap; reaches 100 at 80% gap. Closest available proxy for V-I mismatch without electrical parameter data.</td></tr>
+      <tr><td class="v-code">ZCSS</td><td class="v-wt">15%</td><td>Zero Coverage Suspicion Score</td><td class="v-d">ZCSS = (1 – Coverage_Ratio) × Load_Percentile × 100. Weights missing months by connection size. 8 missing months on a 1 kW household = low score. 8 missing months on a 50 kW industrial = high score. Separates genuine inactivity from suspicious gaps.</td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+<!-- LAYER 3 VHS -->
+<section>
+  <div class="eyebrow">06 — Layer 3 Variables</div>
+  <h2 class="sec-title">VHS — Violation &amp; History Score</h2>
+  <p class="sec-desc">One variable. A step function, not linear — the jump from zero to one violation is large. Beyond that, each additional violation adds progressively less because the consumer is already in the highest-risk tier.</p>
+  <table class="vhs-tbl">
+    <thead>
+      <tr><th>Violation Count</th><th>VHS Score</th><th>Interpretation</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="v0">0</td><td class="v0">0</td><td style="font-size:13px;color:var(--mu);text-align:left;padding:12px 18px">No recorded history. Score driven entirely by CPI and LCI.</td></tr>
+      <tr><td class="v40">1</td><td class="v40">40</td><td style="font-size:13px;color:var(--mu);text-align:left;padding:12px 18px">One prior flag. Enough to push a medium-CPI consumer into HIGH territory.</td></tr>
+      <tr><td class="v65">2</td><td class="v65">65</td><td style="font-size:13px;color:var(--mu);text-align:left;padding:12px 18px">Twice flagged. A known offender who has been penalised before.</td></tr>
+      <tr><td class="v82">3</td><td class="v82">82</td><td style="font-size:13px;color:var(--mu);text-align:left;padding:12px 18px">Three violations. Systematic repeat offender. Treat as HIGH regardless of consumption patterns.</td></tr>
+      <tr><td class="v100">≥ 4</td><td class="v100">100</td><td style="font-size:13px;color:var(--mu);text-align:left;padding:12px 18px">Maximum VHS. Any consumer at this level goes to the top of the inspection queue.</td></tr>
+    </tbody>
+  </table>
+  <div class="info-box" style="margin-top:28px">
+    <p>Dataset context: <strong>111,277 of 111,792</strong> scored consumers (99.5%) carry zero prior violations. Only <strong>515 consumers</strong> have any enforcement history (428 with one violation, 72 with two, 5 with three, 10 with four or more). Override O1 fired zero times because the joint condition — prior violations AND current CPI anomaly — requires a history that does not yet exist at scale. This finding validates the core argument: detection systems depending on historical violation records will systematically fail in Indian DISCOM contexts before systematic inspection coverage has been established.</p>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<div class="surf-section" id="results">
+<div class="inner">
+  <div class="eyebrow">07 — Detection Results</div>
+  <h2 class="sec-title">Risk Classification Across 111,792 Consumers</h2>
+
+  <div class="r-kpi">
+    <div class="kpi high"><span class="kpi-v">49,981</span><span class="kpi-l">HIGH Risk</span><div class="kpi-p">44.71% of scored pool</div></div>
+    <div class="kpi med"><span class="kpi-v">550</span><span class="kpi-l">MEDIUM Risk</span><div class="kpi-p">0.49% of scored pool</div></div>
+    <div class="kpi low"><span class="kpi-v">61,261</span><span class="kpi-l">LOW Risk</span><div class="kpi-p">54.80% of scored pool</div></div>
+    <div class="kpi ex"><span class="kpi-v">52,284</span><span class="kpi-l">EXCLUDED</span><div class="kpi-p">Insufficient data watchlist</div></div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">Risk Distribution (Scored Pool)</div>
+      <div style="position:relative;height:260px;">
+        <canvas id="riskChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Primary Detection Signal — 111,792 Consumers</div>
+      <div style="position:relative;height:260px;">
+        <canvas id="signalChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:32px">
+    <div class="eyebrow" style="margin-bottom:14px">Key findings</div>
+    <div class="g3">
+      <div class="card">
+        <div class="card-title">Max Final Score: 59.77</div>
+        <div class="card-body">No consumer reached the 65-point HIGH threshold through pure scoring alone. Every HIGH-classified consumer was elevated by an override rule (O2 or O3), not by computed CPI+LCI+VHS. This reflects data constraints — no billing data, no V/I readings — not a framework design flaw. With Phase 2 data, pure-score HIGH cases will emerge.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">MOI Dominates at 40.6%</div>
+        <div class="card-body">45,389 consumers have MDI Overdrawal as their primary signal — peak demand exceeds double their sanctioned load. Combined with DSR (37.6%), these two signals account for 78.2% of all classifications. The MDI signal is the most powerful available indicator in the current dataset.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Agriculture: 31% flagging rate</div>
+        <div class="card-body">AG-MS-LT4 (agricultural connections) shows the highest average Final Score (25.2) of any rate category and a 31% HIGH flagging rate — highest proportion in the pool. SCAS and FCS are specifically tuned to separate legitimate seasonal inactivity from suspicious low-consumption patterns during active irrigation months.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:28px">
+    <p>TOP 10,000 priority consumers: combined <strong>7.15 MU</strong> of estimated stolen energy and <strong>₹5.25 Crore</strong> gross annual revenue loss. The highest-ranked consumer (Rank 1) is an MP-LT6 connection with 12 prior violations — estimated monthly theft of <strong>1,607.8 kWh</strong>, gross annual loss <strong>₹1,35,059</strong>, inspection ROI <strong>2,601%</strong>.</p>
+  </div>
+</div>
+</div>
+
+<!-- FINANCIAL ANALYSIS -->
+<section id="financial">
+  <div class="eyebrow">08 — Financial Analysis</div>
+  <h2 class="sec-title">Revenue Leakage, AT&amp;C Scenarios, and Investment Case</h2>
+  <p class="sec-desc">All tariff rates sourced from AVVNL Tariff for Supply of Electricity 2023. Financial module uses peer-benchmark and AT&amp;C pool methodologies. Recovery factor: 60%.</p>
+
+  <div class="fin-det">
+    <div class="fin-m">
+      <span class="fin-v">₹3.56 Cr</span>
+      <span class="fin-l">Gross annual revenue loss detected<br>(peer-benchmark, 7.77 MU stolen energy)</span>
+      <div class="fin-s">1,622 of 50,531 flagged consumers below peer median</div>
+    </div>
+    <div class="fin-m">
+      <span class="fin-v">₹2.13 Cr</span>
+      <span class="fin-l">Recoverable after 60% recovery factor<br>(penalties, reconnection, write-off adjustment)</span>
+      <div class="fin-s">Conservative first-cycle estimate</div>
+    </div>
+    <div class="fin-m">
+      <span class="fin-v">15.26%</span>
+      <span class="fin-l">Detection capture rate<br>(share of ₹23.29 Cr commercial loss pool identified)</span>
+      <div class="fin-s">Phase 2 with billing + DT data targets 65%+ capture</div>
+    </div>
+    <div class="fin-m" style="border-left-color:var(--el)">
+      <span class="fin-v" style="color:var(--el)">₹23.29 Cr</span>
+      <span class="fin-l">Total commercial loss pool<br>(326.19 MU × 18% AT&amp;C × ₹7.14/kWh blended tariff)</span>
+      <div class="fin-s">AVVNL 2023 tariff, weighted by consumer mix</div>
+    </div>
+    <div class="fin-m" style="border-left-color:var(--am)">
+      <span class="fin-v" style="color:var(--am)">₹7.14</span>
+      <span class="fin-l">Blended tariff (₹/kWh)<br>weighted average across detection dataset</span>
+      <div class="fin-s">AVVNL Tariff Order 2023 — actual rates</div>
+    </div>
+    <div class="fin-m" style="border-left-color:var(--gr)">
+      <span class="fin-v" style="color:var(--gr)">326.19 MU</span>
+      <span class="fin-l">Estimated annual distribution volume<br>(TPADL service territory)</span>
+      <div class="fin-s">Base for AT&amp;C scenario revenue recovery calculations</div>
+    </div>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:14px">AT&amp;C Reduction Scenarios</div>
+  <table class="stbl">
+    <thead>
+      <tr>
+        <th>Scenario</th>
+        <th>AT&amp;C Target</th>
+        <th>Annual Saving</th>
+        <th>5-Year NPV</th>
+        <th>10-Year NPV</th>
+        <th>PAT Impact</th>
+        <th>ARR Improve</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Conservative</td><td>16.5%</td><td>₹3.49 Cr</td><td>₹13.25 Cr</td><td>₹21.47 Cr</td><td>₹2.62 Cr</td><td>₹0.11/unit</td></tr>
+      <tr class="base"><td>Base <span class="s-badge">RDSS TARGET</span></td><td>15.0%</td><td>₹6.99 Cr</td><td>₹26.49 Cr</td><td>₹42.94 Cr</td><td>₹5.24 Cr</td><td>₹0.21/unit</td></tr>
+      <tr><td>Optimistic</td><td>13.0%</td><td>₹11.65 Cr</td><td>₹44.15 Cr</td><td>₹71.57 Cr</td><td>₹8.74 Cr</td><td>₹0.36/unit</td></tr>
+      <tr><td>Best Case</td><td>12.0%</td><td>₹13.98 Cr</td><td>₹52.98 Cr</td><td>₹85.88 Cr</td><td>₹10.48 Cr</td><td>₹0.43/unit</td></tr>
+    </tbody>
+  </table>
+  <div style="font-size:11px;color:var(--di);margin-top:6px">NPV at 10% WACC. PAT impact at 25% corporate tax rate. AT&amp;C baseline: 18%. ARR improvement per unit distributed.</div>
+
+  <div style="margin-top:44px;display:grid;grid-template-columns:1fr 1fr;gap:22px">
+    <div class="chart-card">
+      <div class="chart-title">Annual Savings by Scenario (₹ Crore)</div>
+      <div style="position:relative;height:220px;">
+        <canvas id="scenarioChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">10-Year NPV by Scenario (₹ Crore)</div>
+      <div style="position:relative;height:220px;">
+        <canvas id="npvChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:44px">
+    <div class="eyebrow" style="margin-bottom:14px">Programme investment case (Base Scenario)</div>
+    <div class="inv-row">
+      <div class="inv-m"><span class="inv-v">₹24.02 Cr</span><span class="inv-l">10-Year Net Programme NPV</span></div>
+      <div class="inv-m"><span class="inv-v">2.91×</span><span class="inv-l">Benefit-Cost Ratio</span></div>
+      <div class="inv-m"><span class="inv-v">8.68 mo</span><span class="inv-l">Approximate Payback Period</span></div>
+      <div class="inv-m"><span class="inv-v">₹15.16 Cr</span><span class="inv-l">Full Programme Cost (50,531 × ₹3,000)</span></div>
+    </div>
+    <div class="g2" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">Break-Even Thresholds</div>
+        <div class="card-body">
+          <div style="margin-bottom:10px"><span style="font-family:var(--fm);color:var(--el)">58.35 kWh/month</span> — Year-1 cash recovery threshold. 3,373 of 50,531 flagged consumers exceed this (6.7% are Year-1 cost-positive).</div>
+          <div><span style="font-family:var(--fm);color:var(--gr)">3.50 kWh/month</span> — Perpetuity basis threshold. Virtually every flagged consumer exceeds this. Theft stopped today eliminates loss in every future year. The inspection investment is one-time; the recovery is permanent.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">TPADL Subsidiary EBITDA Impact</div>
+        <div style="position:relative;height:160px;">
+          <canvas id="ebitdaChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:44px">
+    <div class="eyebrow" style="margin-bottom:14px">Sensitivity Analysis — Base Scenario (18% → 15%)</div>
+    <div class="sens-wrap">
+      <div>
+        <div class="chart-title" style="font-size:14px;margin-bottom:14px">Panel A: AT&amp;C Reduction Sensitivity (Tariff: ₹7.14/kWh)</div>
+        <table class="s-tbl">
+          <thead><tr><th>AT&amp;C Reduction</th><th>Annual Saving</th><th>5-Year NPV</th></tr></thead>
+          <tbody>
+            <tr><td>18% → 17% (1pp)</td><td>₹2.33 Cr</td><td>₹8.83 Cr</td></tr>
+            <tr><td>18% → 16% (2pp)</td><td>₹3.49 Cr</td><td>₹13.25 Cr</td></tr>
+            <tr class="sr"><td>18% → 15% (3pp)</td><td>₹6.99 Cr</td><td>₹26.49 Cr</td></tr>
+            <tr><td>18% → 14% (4pp)</td><td>₹9.32 Cr</td><td>₹35.32 Cr</td></tr>
+            <tr><td>18% → 13% (5pp)</td><td>₹11.65 Cr</td><td>₹44.15 Cr</td></tr>
+            <tr><td>18% → 12% (6pp)</td><td>₹13.98 Cr</td><td>₹52.98 Cr</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="chart-title" style="font-size:14px;margin-bottom:14px">Panel B: Tariff Sensitivity (AT&amp;C reduction: 3pp)</div>
+        <table class="s-tbl">
+          <thead><tr><th>Tariff Rate</th><th>Annual Saving</th><th>5-Year NPV</th></tr></thead>
+          <tbody>
+            <tr><td>₹5.50/kWh</td><td>₹5.38 Cr</td><td>₹20.40 Cr</td></tr>
+            <tr><td>₹6.50/kWh</td><td>₹6.36 Cr</td><td>₹24.11 Cr</td></tr>
+            <tr><td>₹7.00/kWh</td><td>₹6.85 Cr</td><td>₹25.97 Cr</td></tr>
+            <tr class="sr"><td>₹7.14/kWh (actual)</td><td>₹6.99 Cr</td><td>₹26.49 Cr</td></tr>
+            <tr><td>₹7.50/kWh</td><td>₹7.34 Cr</td><td>₹27.82 Cr</td></tr>
+            <tr><td>₹8.00/kWh</td><td>₹7.83 Cr</td><td>₹29.68 Cr</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:44px">
+    <div class="eyebrow" style="margin-bottom:14px">Tata Power Group financial context (FY 2025)</div>
+    <div class="g4">
+      <div class="card"><div class="card-title" style="font-size:14px">Group Revenue</div><div style="font-family:var(--fm);font-size:22px;color:var(--txt);margin:6px 0">₹65,478 Cr</div><div class="card-body">FY 2025 consolidated</div></div>
+      <div class="card"><div class="card-title" style="font-size:14px">Group EBITDA</div><div style="font-family:var(--fm);font-size:22px;color:var(--txt);margin:6px 0">₹15,354 Cr</div><div class="card-body">23.45% EBITDA margin</div></div>
+      <div class="card"><div class="card-title" style="font-size:14px">Group PAT</div><div style="font-family:var(--fm);font-size:22px;color:var(--txt);margin:6px 0">₹3,971 Cr</div><div class="card-body">6.06% net margin</div></div>
+      <div class="card"><div class="card-title" style="font-size:14px">TPADL EBITDA</div><div style="font-family:var(--fm);font-size:22px;color:var(--el);margin:6px 0">+32.6%</div><div class="card-body">Base scenario subsidiary improvement</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONCLUSION -->
+<div class="surf-section" id="conclusion">
+<div class="inner">
+  <div class="eyebrow">09 — Conclusion &amp; Contributions</div>
+  <h2 class="sec-title">Three Distinct Contributions to the Literature</h2>
+  <p class="sec-desc">The framework deviates from existing studies in three specific, documented ways — not incremental adjustments but architectural choices driven by field-operational constraints.</p>
+
+  <div class="contrib-grid">
+    <div class="contrib">
+      <div class="c-num">Contribution 01</div>
+      <div class="c-title">Interpretable Rule-Based Architecture</div>
+      <div class="c-body">Instead of a black-box ML model trained on a foreign benchmark dataset, the framework uses explicit, auditable rules that billing analysts and divisional managers can read, interpret, and calibrate without data science expertise. Every formula, weight, and threshold is documented with its operational rationale — a prerequisite for legal enforceability in Indian revenue tribunals.</div>
+    </div>
+    <div class="contrib">
+      <div class="c-num">Contribution 02</div>
+      <div class="c-title">Network Validation via ZCSS and Override Rules</div>
+      <div class="c-body">The framework integrates coverage-weighted zone analysis (ZCSS) and load-scaled override conditions as network-wide validation mechanisms. Override O3 (25 kW+ connection with &lt;3% LFR) triggers mass survey protocols for large connections drawing near-zero load — an integration not formalized in prior single-study frameworks.</div>
+    </div>
+    <div class="contrib">
+      <div class="c-num">Contribution 03</div>
+      <div class="c-title">Field-Linked Financial Quantification</div>
+      <div class="c-body">The financial module directly links detection outputs to DISCOM-level metrics: ACS-ARR gap, EBITDA impact, PAT addback, inspection ROI, NPV, BCR, and consumer-level break-even thresholds. This end-to-end financial layer — absent from almost all academic detection models — converts an analytical output into a capital allocation decision framework.</div>
+    </div>
+  </div>
+
+  <div class="eyebrow" style="margin-bottom:14px">Phase 2 future scope — data unlocks</div>
+  <div class="scope-grid">
+    <div class="scope-item">
+      <div class="s-ico">⚡</div>
+      <div><div class="s-title">Monthly Billed kWh + DT Mapping</div><div class="s-body">Unlocks CDI, BMR, and transformer-level energy balancing. Detection capture rate estimated to rise from 15.26% to 65%+. Highest priority data request.</div></div>
+    </div>
+    <div class="scope-item">
+      <div class="s-ico">📊</div>
+      <div><div class="s-title">Hourly / Daily Consumption Data</div><div class="s-body">Enables peak-vs-offpeak ratio, weekday-weekend structural break, finer Z-score analysis. Required for temporal evasion pattern detection.</div></div>
+    </div>
+    <div class="scope-item">
+      <div class="s-ico">🔌</div>
+      <div><div class="s-title">Voltage, Current &amp; Power Factor Readings</div><div class="s-body">Full electrical parameter layer: V-I mismatch, phase imbalance detection, power factor drop analysis. CT tampering detection not possible without these.</div></div>
+    </div>
+    <div class="scope-item">
+      <div class="s-ico">🤖</div>
+      <div><div class="s-title">Hybrid ML Integration (Phase 3)</div><div class="s-body">As confirmed-theft labels accumulate from field inspections, supervised XGBoost or LSTM can be trained on top of the rule-based scores. Rules remain interpretable; ML improves recall at the margin.</div></div>
+    </div>
+  </div>
+
+  <div class="info-box" style="margin-top:36px">
+    <p>Programme result summary: <strong>111,792</strong> consumers scored → <strong>49,981 HIGH</strong> (44.71%) → <strong>₹6.99 Crore</strong> annual saving under base scenario → <strong>32.6%</strong> TPADL EBITDA improvement → <strong>₹24.02 Crore</strong> net 10-year NPV → <strong>2.91× BCR</strong> → payback in <strong>8.68 months</strong>. Every sensitivity scenario across all sixteen parameter combinations tested produces positive NPV.</p>
+  </div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="f-title">Predictive Meter Data Analytics for AT&amp;C Loss Identification and Revenue Optimization</div>
+  <div class="f-sub">
+  <span style="font-family:var(--fh);font-size:18px;font-weight:700;color:var(--txt);display:block;margin-bottom:6px">Divyansh Jain &nbsp;&mdash;&nbsp; 084015</span>
+  MBA Capstone Project &nbsp;·&nbsp; Tata Power Ajmer Distribution Limited &nbsp;·&nbsp; 2025<br>
+  TPADL Theft Detection Engine v3.0 &nbsp;·&nbsp; Three-layer rule-based scoring framework &nbsp;·&nbsp; 111,792 consumers</div>
+  <div class="f-tags">
+    <div class="f-tag">AT&amp;C Loss Reduction</div>
+    <div class="f-tag">Smart Meter Analytics</div>
+    <div class="f-tag">Electricity Theft Detection</div>
+    <div class="f-tag">AVVNL Tariff 2023</div>
+    <div class="f-tag">Power Distribution India</div>
+    <div class="f-tag">RDSS Compliance</div>
+    <div class="f-tag">Revenue Optimization</div>
+    <div class="f-tag">Rajasthan DISCOM</div>
+  </div>
+</footer>
+
+<script>
+// ---- METER COUNTER ----
+(function(){
+  const el = document.getElementById('meter');
+  const target = 111792;
+  const duration = 2200;
+  let start = null;
+  function ease(t){ return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+  function step(ts){
+    if(!start) start=ts;
+    const progress = Math.min((ts-start)/duration,1);
+    const val = Math.floor(ease(progress)*target);
+    el.textContent = val.toLocaleString('en-IN');
+    if(progress<1) requestAnimationFrame(step);
+    else el.textContent = target.toLocaleString('en-IN');
+  }
+  requestAnimationFrame(step);
+})();
+
+// ---- CHART DEFAULTS ----
+Chart.defaults.color = '#456785';
+Chart.defaults.borderColor = '#C8D3E0';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+const EL='#0F5CBC', OR='#D94E18', GR='#008A60', RE='#C42828', AM='#AC7100', GO='#937000', DI='#5E7B95';
+
+// ---- RISK DISTRIBUTION DOUGHNUT ----
+new Chart(document.getElementById('riskChart'),{
+  type:'doughnut',
+  data:{
+    labels:['HIGH (49,981)','MEDIUM (550)','LOW (61,261)','EXCLUDED (52,284)'],
+    datasets:[{
+      data:[49981,550,61261,52284],
+      backgroundColor:[RE,AM,GR,DI],
+      borderColor:'#F0F4F9',
+      borderWidth:2,
+      hoverOffset:6
+    }]
+  },
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{position:'bottom',labels:{padding:16,color:'#456785',font:{size:11}}},
+      tooltip:{callbacks:{label:function(c){
+        const pct=(c.raw/(49981+550+61261+52284)*100).toFixed(2);
+        return ` ${c.label}: ${c.raw.toLocaleString('en-IN')} (${pct}%)`;
+      }}}
+    },
+    cutout:'60%'
+  }
+});
+
+// ---- PRIMARY SIGNAL HORIZONTAL BAR ----
+new Chart(document.getElementById('signalChart'),{
+  type:'bar',
+  data:{
+    labels:['MOI','DSR','PDS','CTS','MCGI','SCAS','ZCSS','CVI','ZSB','LFR','FCS','VHS'],
+    datasets:[{
+      label:'Consumers',
+      data:[45389,42007,9165,6465,3987,1735,1115,1019,337,330,173,70],
+      backgroundColor:[EL,EL,OR,OR,AM,AM,GR,GR,DI,DI,DI,DI],
+      borderRadius:4,
+      borderSkipped:false
+    }]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:function(c){
+        const pct=(c.raw/111792*100).toFixed(1);
+        return ` ${c.raw.toLocaleString('en-IN')} consumers (${pct}%)`;
+      }}}
+    },
+    scales:{
+      x:{grid:{color:'rgba(200,210,224,.7)'},ticks:{color:'#456785',font:{size:10}}},
+      y:{grid:{display:false},ticks:{color:'#0F5CBC',font:{size:11,family:"'JetBrains Mono',monospace"}}}
+    }
+  }
+});
+
+// ---- SCENARIO ANNUAL SAVINGS ----
+new Chart(document.getElementById('scenarioChart'),{
+  type:'bar',
+  data:{
+    labels:['Conservative','Base','Optimistic','Best Case'],
+    datasets:[{
+      label:'Annual Saving (₹ Cr)',
+      data:[3.49,6.99,11.65,13.98],
+      backgroundColor:[DI,EL,OR,GO],
+      borderRadius:6,
+      borderSkipped:false
+    }]
+  },
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:c=>' ₹'+c.raw+' Crore/year'}}
+    },
+    scales:{
+      x:{grid:{display:false},ticks:{color:'#456785',font:{size:11}}},
+      y:{grid:{color:'rgba(200,210,224,.7)'},ticks:{color:'#456785',font:{size:10},callback:v=>'₹'+v+' Cr'}}
+    }
+  }
+});
+
+// ---- 10-YEAR NPV BAR ----
+new Chart(document.getElementById('npvChart'),{
+  type:'bar',
+  data:{
+    labels:['Conservative','Base','Optimistic','Best Case'],
+    datasets:[{
+      label:'10-Year NPV (₹ Cr)',
+      data:[21.47,42.94,71.57,85.88],
+      backgroundColor:[DI,EL,OR,GO],
+      borderRadius:6,
+      borderSkipped:false
+    }]
+  },
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:c=>' ₹'+c.raw+' Crore (10-yr NPV)'}}
+    },
+    scales:{
+      x:{grid:{display:false},ticks:{color:'#456785',font:{size:11}}},
+      y:{grid:{color:'rgba(200,210,224,.7)'},ticks:{color:'#456785',font:{size:10},callback:v=>'₹'+v+' Cr'}}
+    }
+  }
+});
+
+// ---- EBITDA IMPACT HORIZONTAL ----
+new Chart(document.getElementById('ebitdaChart'),{
+  type:'bar',
+  data:{
+    labels:['Conservative','Base','Optimistic','Best Case'],
+    datasets:[{
+      label:'EBITDA Impact',
+      data:[16.3,32.6,54.3,65.2],
+      backgroundColor:[
+        'rgba(94,123,149,.8)',
+        'rgba(15,92,188,.8)',
+        'rgba(217,78,24,.8)',
+        'rgba(147,112,0,.8)'
+      ],
+      borderRadius:4,
+      borderSkipped:false
+    }]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:c=>` +${c.raw}% TPADL EBITDA`}}
+    },
+    scales:{
+      x:{grid:{color:'rgba(200,210,224,.7)'},ticks:{color:'#456785',font:{size:10},callback:v=>'+'+v+'%'},max:80},
+      y:{grid:{display:false},ticks:{color:'#456785',font:{size:11}}}
+    }
+  }
+});
+</script>
+</body>
+</html>
