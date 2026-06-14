@@ -8,9 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#F0F4F9;--surf:#E5EBF4;--card:#FFFFFF;--bdr:#C8D3E0;
-  --el:#0F5CBC;--el-dim:rgba(15,92,188,.10);
-  --txt:#1B2B40;--mu:#456785;
+  --bg:#EEF6F0;--surf:#E2EFE6;--card:#FFFFFF;--bdr:#C9DECD;
+  --el:#138A57;--el-dim:rgba(19,138,87,.10);
+  --txt:#1C3326;--mu:#5C7C68;
   --fh:'Rajdhani',sans-serif;--fb:'Inter',sans-serif;--fm:'JetBrains Mono',monospace;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -18,7 +18,7 @@ html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--txt);font-family:var(--fb);font-size:16px;line-height:1.6;overflow-x:hidden}
 
 nav{position:fixed;top:0;left:0;right:0;z-index:200;height:58px;
-  background:rgba(240,244,249,.97);backdrop-filter:blur(14px);
+  background:rgba(238,246,240,.97);backdrop-filter:blur(14px);
   border-bottom:1px solid var(--bdr);
   display:flex;align-items:center;justify-content:space-between;padding:0 40px}
 .nav-logo{font-family:var(--fh);font-size:18px;font-weight:700;color:var(--el);letter-spacing:1px}
@@ -34,22 +34,32 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:58px;
   color:var(--txt);line-height:1.15;margin-bottom:14px}
 .sec-desc{font-size:14px;color:var(--mu);max-width:680px;line-height:1.75;margin-bottom:34px}
 
-.drive-section{max-width:1180px;margin:0 auto;padding:120px 40px 76px}
+.drive-section{padding:120px 24px 76px}
 
 .sheet-block{margin-bottom:50px}
 .sheet-block:last-child{margin-bottom:0}
 .sheet-label{font-family:var(--fh);font-size:17px;font-weight:600;color:var(--txt);margin-bottom:6px}
 .sheet-sub{font-size:12px;color:var(--mu);margin-bottom:14px}
 
+.zoom-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.zoom-bar button{width:30px;height:30px;border:1px solid var(--bdr);border-radius:6px;
+  background:var(--card);color:var(--el);font-family:var(--fm);font-size:16px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .15s,border-color .15s}
+.zoom-bar button:hover{background:var(--el-dim);border-color:var(--el)}
+.zoom-bar .zoom-reset{width:auto;padding:0 14px;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.zoom-label{font-family:var(--fm);font-size:12px;color:var(--mu);min-width:46px;text-align:center}
+
 .drive-frame{width:100%;height:600px;border:1px solid var(--bdr);border-radius:12px;
-  overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);background:var(--card)}
-.drive-frame iframe{width:100%;height:100%;border:none;display:block;overscroll-behavior:contain}
+  overflow:auto;box-shadow:0 2px 12px rgba(19,138,87,.08);background:var(--card)}
+.drive-frame iframe{width:100%;height:100%;border:none;display:block;
+  transform-origin:0 0;transition:transform .15s ease;overscroll-behavior:contain}
 
 footer{background:var(--surf);border-top:1px solid var(--bdr);padding:36px 40px;text-align:center}
 .f-title{font-family:var(--fh);font-size:15px;font-weight:600;color:var(--txt);margin-bottom:6px}
 .f-sub{font-size:12px;color:var(--mu);line-height:1.6}
 
-@media(max-width:900px){.drive-section{padding:100px 20px 56px}}
+@media(max-width:900px){.drive-section{padding:100px 16px 56px}}
 @media(max-width:600px){
   .nav-links{display:none}
   .drive-frame{height:420px}
@@ -62,12 +72,12 @@ footer{background:var(--surf);border-top:1px solid var(--bdr);padding:36px 40px;
 <nav>
   <div class="nav-logo">TPADL <span>· Detection Engine v3.0</span></div>
   <ul class="nav-links">
-    <li><a href="index.html#problem">Problem</a></li>
-    <li><a href="index.html#data">Data</a></li>
-    <li><a href="index.html#engine">Engine</a></li>
-    <li><a href="index.html#results">Results</a></li>
-    <li><a href="index.html#financial">Financial</a></li>
-    <li><a href="index.html#conclusion">Conclusion</a></li>
+    <li><a href="tpadl_working.html#problem">Problem</a></li>
+    <li><a href="tpadl_working.html#data">Data</a></li>
+    <li><a href="tpadl_working.html#engine">Engine</a></li>
+    <li><a href="tpadl_working.html#results">Results</a></li>
+    <li><a href="tpadl_working.html#financial">Financial</a></li>
+    <li><a href="tpadl_working.html#conclusion">Conclusion</a></li>
     <li><a href="data.html" class="active">Source Sheets</a></li>
   </ul>
 </nav>
@@ -75,23 +85,33 @@ footer{background:var(--surf);border-top:1px solid var(--bdr);padding:36px 40px;
 <div class="drive-section">
   <div class="eyebrow">10 — Source Data</div>
   <h2 class="sec-title">Full Working Datasets</h2>
-  <p class="sec-desc">Live embedded view of both source workbooks underlying this analysis — the consumer-level theft detection scoring engine and the financial impact model.</p>
+  <p class="sec-desc">Live embedded view of both source workbooks underlying this analysis — the consumer-level theft detection scoring engine and the financial impact model. Use +/− to zoom each sheet.</p>
 
   <div class="sheet-block">
     <div class="sheet-label">Theft Detection Engine</div>
     <div class="sheet-sub">111,792-consumer scoring sheet — CPI, LCI, VHS layer scores, final classification</div>
+    <div class="zoom-bar">
+      <button onclick="adjustZoom('theft-iframe',-0.1)">−</button>
+      <span class="zoom-label" id="theft-iframe-label">100%</span>
+      <button onclick="adjustZoom('theft-iframe',0.1)">+</button>
+      <button class="zoom-reset" onclick="resetZoom('theft-iframe')">Reset</button>
+    </div>
     <div class="drive-frame">
-      <!-- PASTE THEFT DETECTION SHEET LINK BELOW -->
-      <iframe src="https://docs.google.com/spreadsheets/d/1XfKE8CAL9CVF8rxfAdt_N1fgp8jvXu9o/edit?usp=sharing&ouid=106575157220402998671&rtpof=true&sd=true"></iframe>
+      <iframe id="theft-iframe" src="https://docs.google.com/spreadsheets/d/1hzkNjHZ5f7fz3hKKG8Zuzdun1eZq2wTS/preview"></iframe>
     </div>
   </div>
 
   <div class="sheet-block">
     <div class="sheet-label">Financial Analysis Model</div>
     <div class="sheet-sub">AT&amp;C reduction scenarios, NPV/IRR, sensitivity tables, investment case</div>
+    <div class="zoom-bar">
+      <button onclick="adjustZoom('fin-iframe',-0.1)">−</button>
+      <span class="zoom-label" id="fin-iframe-label">100%</span>
+      <button onclick="adjustZoom('fin-iframe',0.1)">+</button>
+      <button class="zoom-reset" onclick="resetZoom('fin-iframe')">Reset</button>
+    </div>
     <div class="drive-frame">
-      <!-- PASTE FINANCIAL MODEL SHEET LINK BELOW -->
-      <iframe src="https://docs.google.com/spreadsheets/d/1hzkNjHZ5f7fz3hKKG8Zuzdun1eZq2wTS/edit?usp=sharing&ouid=106575157220402998671&rtpof=true&sd=true"></iframe>
+      <iframe id="fin-iframe" src="https://docs.google.com/spreadsheets/d/1XfKE8CAL9CVF8rxfAdt_N1fgp8jvXu9o/preview"></iframe>
     </div>
   </div>
 </div>
@@ -101,5 +121,19 @@ footer{background:var(--surf);border-top:1px solid var(--bdr);padding:36px 40px;
   <div class="f-sub">MBA Capstone Project &nbsp;·&nbsp; Tata Power Ajmer Distribution Limited &nbsp;·&nbsp; 2025</div>
 </footer>
 
+<script>
+const zoomLevels={};
+function adjustZoom(id,delta){
+  const z=Math.min(2,Math.max(0.5,Math.round(((zoomLevels[id]||1)+delta)*10)/10));
+  zoomLevels[id]=z;
+  document.getElementById(id).style.transform='scale('+z+')';
+  document.getElementById(id+'-label').textContent=Math.round(z*100)+'%';
+}
+function resetZoom(id){
+  zoomLevels[id]=1;
+  document.getElementById(id).style.transform='scale(1)';
+  document.getElementById(id+'-label').textContent='100%';
+}
+</script>
 </body>
 </html>
